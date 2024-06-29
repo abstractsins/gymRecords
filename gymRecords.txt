@@ -1,6 +1,7 @@
-Gym
+"Gym"
 
 20240206
+
 Lat pull down
 90lb 4x15
 
@@ -8,6 +9,7 @@ Converging shoulder press
 70lb 4x5
 
 20240209
+
 Angled leg press unloaded 136lbs
 140lb 3x15
 
@@ -18,6 +20,7 @@ Outer thigh
 100lb 3x15
 
 20240212
+
 Diverging seated row
 90lb 3x15
 
@@ -31,6 +34,7 @@ Lateral raise
 60lb 1x10
 
 20240216
+
 Angled leg press unloaded 136lbs
 140lb 4x15
 
@@ -160,7 +164,7 @@ Angled leg press unloaded 136lbs
 180lb 4x15
 
 Outer thigh
-120b 3x15
+120lb 3x15
 
 Inner thigh
 120lb 3x15
