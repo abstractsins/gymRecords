@@ -1,47 +1,63 @@
-const { totalmem } = require('os');
-const { exitCode } = require('process');
-
-const fs = require('fs').promises;
 const filepath = './gymRecords.txt';
 
-const util = require('util');
-
 var oGym = {
+    'loaded': false,
     'dateCodes': [],
     'dates': {},
 };
 
-async function readFileAsync(filePath) {
-    var sub = 'readFileAsync()';
-    console.log('\n' + sub, '>>>>>', 'has been called');
-
+async function fetchData(filePath) {
+    var sub = 'fetchData()';
+    console.log(sub, '>>>>>', 'has been called');
+    
     try {
-        const data = await fs.readFile(filePath, 'utf8');
+        const response = await fetch(filePath);
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const data = await response.text();
         var nChars = data.length;
         console.log(sub, '>>>', 'File read');
+        // console.log(data);
         console.log(sub, '>>>', 'total characters: ' + nChars);
         return data;
-    } catch (err) {
-        console.error('!!!!!!!!!! Error reading file:', err);
+    } catch (error) {
+        console.error('!!!!! There has been a problem with your fetch operation:', error);
     }
 }
 
 (async () => {
-    oGym['raw'] = await readFileAsync(filepath);
+    oGym['raw'] = await fetchData(filepath);
+    oGym['loaded'] = true;
     getStarted(oGym);
 
-    console.log(util.inspect(oGym.dates, { depth: null, colors: true }));        
-})();   
+    // console.log(util.inspect(oGym.dates, { depth: null, colors: true }));        
+})();  
 
 
+window.onload = function() {
 
+    console.log('######### window is loaded');
 
+    if (oGym['loaded'] === true) {
+        console.log('######### gym data is loaded, begin plotting');
 
+        // debug
+        var text = document.createElement('p');
+        text.innerHTML = oGym['raw'];
+        document.body.append(text);
+        // google chart
 
+    } else {
+        console.error('######### gym data not loaded');       
+    }     
+
+};
 
 
 
 function getStarted(oGym) {
+    console.group('Records Parsing');
     var sub = 'getStarted()';
     console.log(sub, '>>>>>', 'has been called');
 
@@ -50,6 +66,7 @@ function getStarted(oGym) {
     parse(oGym);
     totalWeights(oGym);
     logStats(oGym);
+    console.groupEnd();
 }
 
 function format(string) {
