@@ -6,6 +6,28 @@ var oGym = {
     'dates': {},
 };
 
+var exerciseCatagories = {
+    'upper-body': ['lateral pulldown', 'lateral raise', 'biceps curl', 'triceps extension', 'diverging seated row', 'converging chest press', 'converging shoulder press'],
+    'lower-body': ['inner thigh', 'outer thigh', 'angled leg press (unloaded 136lbs)']
+}
+
+
+window.onload = function() {
+
+    console.log('######### window is loaded');
+
+    if (oGym['loaded'] === true) {
+        console.log('######### gym data is loaded, begin plotting');
+
+        // google chart
+        // doChart(oGym);
+
+    } else {
+        console.error('######### gym data not loaded');       
+    }     
+
+};
+
 async function fetchData(filePath) {
     var sub = 'fetchData()';
     console.log(sub, '>>>>>', 'has been called');
@@ -18,7 +40,6 @@ async function fetchData(filePath) {
         const data = await response.text();
         var nChars = data.length;
         console.log(sub, '>>>', 'File read');
-        // console.log(data);
         console.log(sub, '>>>', 'total characters: ' + nChars);
         return data;
     } catch (error) {
@@ -26,38 +47,18 @@ async function fetchData(filePath) {
     }
 }
 
+//* Start Parsing Process
 (async () => {
     oGym['raw'] = await fetchData(filepath);
     oGym['loaded'] = true;
     getStarted(oGym);
-
-    // console.log(util.inspect(oGym.dates, { depth: null, colors: true }));        
+    console.dir(oGym);
+    webUi(oGym);
+    logStats(oGym);
 })();  
 
-
-window.onload = function() {
-
-    console.log('######### window is loaded');
-
-    if (oGym['loaded'] === true) {
-        console.log('######### gym data is loaded, begin plotting');
-
-        // debug
-        var text = document.createElement('p');
-        text.innerHTML = oGym['raw'];
-        document.body.append(text);
-        // google chart
-
-    } else {
-        console.error('######### gym data not loaded');       
-    }     
-
-};
-
-
-
 function getStarted(oGym) {
-    console.group('Records Parsing');
+    console.groupCollapsed('Records Parsing');
     var sub = 'getStarted()';
     console.log(sub, '>>>>>', 'has been called');
 
@@ -65,7 +66,44 @@ function getStarted(oGym) {
     oGym['textArr'] = breakdown(oGym['formatted']);
     parse(oGym);
     totalWeights(oGym);
-    logStats(oGym);
+    console.groupEnd();
+}
+
+function doChart(label) {
+
+    var exercise = label;
+    
+    console.group('Chart Plotting');
+
+    // Set chart options
+    var options = {
+        'title': 'Reps x Weight Over Time',
+        'width': 800,
+        'height': 600
+    };
+
+    // ! sample
+    // Create the data table.
+    var data = new google.visualization.DataTable();
+    // X-Axis (time)
+    data.addColumn('string', 'Date');
+    data.addColumn('number', exercise);
+    // data.addRows([
+    //     ['Mushrooms', 3],
+    //     ['Onions', 1],
+    //     ['Olives', 1],
+    //     ['Zucchini', 1],
+    //     ['Pepperoni', 2]
+    // ]);
+
+    var dataSet = getDataFromExercise(exercise);
+    data.addRows(dataSet);
+    
+    // Instantiate and draw our chart, passing in some options.
+    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+
+    chart.draw(data, options);
+
     console.groupEnd();
 }
 
@@ -81,6 +119,19 @@ function format(string) {
 
     return string;
 
+}
+
+function getDataFromExercise(exercise) {
+    var data = [];
+    Object.keys(oGym.dates).forEach(date => {
+        if (Object.keys(oGym['dates'][date]['exercises']).includes(exercise)) {
+            var readableDate = oGym['dates'][date]['readable'];
+            var totalWeightReps = oGym['dates'][date]['exercises'][exercise]['totalWeightReps'];
+            data.push([readableDate, totalWeightReps]);
+        }
+    })
+    console.log(data);
+    return data;
 }
 
 function totalWeights(oGym) {
@@ -156,7 +207,7 @@ function parse(oGym) {
     var sub = 'parse()';
     console.log(sub, '>>>>>', 'has been called');
 
-    var currentDate, currentExcercise;
+    var currentDate, currentExercise;
 
     oGym['textArr'].forEach((el, i, a) => {
 
@@ -176,17 +227,17 @@ function parse(oGym) {
             oGym['dates'][dateCode]['exercises'] = {};
         }
 
-        // excercise
+        // exercise
         if (el.match(/^[a-zA-Z]+/, 'i')) {
             var exercise = el.trim(); 
-            currentExcercise = exercise;
+            currentExercise = exercise;
             oGym['dates'][currentDate]['exercises'][exercise] = {};
             oGym['dates'][currentDate]['exercises'][exercise].sets = [];
         } 
 
         // reps
         if (el.match(/^\d+lb/)) {
-            oGym['dates'][currentDate]['exercises'][currentExcercise].sets.push(el);
+            oGym['dates'][currentDate]['exercises'][currentExercise].sets.push(el);
         }
     });
 }
@@ -215,7 +266,6 @@ function gapReplacer(string) {
     return string;
 }
 
-
 //* LOGGING FUNCTIONS
 function logStats(oGym) {
     var sub = 'logStats()';
@@ -236,3 +286,125 @@ function logStats(oGym) {
     console.log('### total number of unique exercises: ' + exercises.size);
     console.groupEnd();
 }
+
+//* DOM MANIPULATION
+class exeButton {
+    constructor(label, category) {
+        this.button = document.createElement('exe');
+        this.button.innerHTML = label;
+        this.button.setAttribute('id', label);
+        this.button.classList.add(category);
+        var button = this.button;
+        this.button.addEventListener('click', function() {
+            doChart(label);
+            checkRadio(button);
+        })
+    }
+
+    organize() {
+        var cats = Array.from(document.getElementsByTagName('exe-cat'));
+        cats = cats.filter(cat => {
+            if (this.button.classList.contains(cat.id)) {
+                return true;
+            } else if (cat.id.replaceAll('-', ' ') === this.button.innerHTML) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+        if (cats[0]) {
+            cats[0].append(this.button);
+        }
+    }
+}
+
+function checkRadio(button) {
+    console.log(button);
+    var buttons = Array.from(document.getElementsByTagName('exe'));
+    buttons.forEach(button => {
+        if (button.classList.contains('active')) {
+            button.classList.remove('active');
+        }
+    })
+
+    button.classList.add('active');
+
+}
+
+class catDiv {
+    constructor(cat) {
+        this.div = document.createElement('exe-cat');
+        this.div.setAttribute('id', cat);
+        this.div.classList.add('category');
+    }
+
+    organize() {
+        document.getElementById('exercises').append(this.div);
+    }
+}
+
+function webUi(oGym) {
+    console.group('*** Web UI ***')
+    exercisePopulation(oGym);
+    console.groupEnd();
+}
+
+function exercisePopulation(oGym) {
+    var sub = 'exercisePopulation()';
+    console.log(sub, '>>>>>', 'has been called');
+
+    var exercises = ['upper body', 'lower body'];
+
+    Object.keys(oGym['dates']).forEach(date => {
+        var daysExes = Object.keys(oGym['dates'][date]['exercises']);
+        daysExes.forEach(exe => {
+            if (!exercises.includes(exe)) {
+                exercises.push(exe);
+            }
+        })
+    })
+
+    console.log(sub, '>>>', exercises);
+
+    createListDiv(exercises, exerciseCatagories);
+
+}
+
+function createListDiv(exercises, catagories) {
+    var sub = 'createListDiv()';
+    console.log(sub, '>>>>>', 'has been called');
+
+    var continaner = document.createElement('div');
+    continaner.setAttribute('id', 'exes-container');
+
+    var upperBody = document.createElement('exercise-cat');
+    upperBody.setAttribute('id', 'upper-body-exes');
+    var upperBodyExes = [];
+
+    var lowerBody = document.createElement('exercise-cat');
+    lowerBody.setAttribute('id', 'lower-body-exes');
+    var lowerBodyExes = [];
+    
+    Object.keys(catagories).forEach(cat => {
+        var div = new catDiv(cat);
+        div.organize();
+    });
+
+    exercises.forEach(exe => {
+        var cat;
+        if (catagories['upper-body'].includes(exe)) {
+            upperBodyExes.push(exe);
+            cat = 'upper-body';
+        } else if (catagories['lower-body'].includes(exe)) {
+            lowerBodyExes.push(exe);
+            cat = 'lower-body';
+        }
+        var btn = new exeButton(exe, cat);
+        btn.organize();
+    })
+
+
+}
+
+
+
