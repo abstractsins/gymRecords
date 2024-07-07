@@ -16,16 +16,27 @@ window.onload = function() {
 
     console.log('######### window is loaded');
 
-    if (oGym['loaded'] === true) {
-        console.log('######### gym data is loaded, begin plotting');
-
-        // google chart
-        // doChart(oGym);
-
-    } else {
-        console.error('######### gym data not loaded');       
-    }     
-
+    //* Start Parsing Process
+    (async () => {
+        oGym['raw'] = await fetchData(filepath);
+        oGym['loaded'] = true;
+        getStarted(oGym);
+        console.dir(oGym);
+        
+        if (oGym['loaded'] === true) {
+            console.log('######### gym data is loaded, begin plotting');
+            
+            // google chart
+            // doChart(oGym);
+            webUi(oGym);
+            
+        } else {
+            console.error('######### gym data not loaded');
+        }     
+        bigScreen();
+        logStats(oGym);
+    })()  ;
+        
 };
 
 async function fetchData(filePath) {
@@ -46,16 +57,6 @@ async function fetchData(filePath) {
         console.error('!!!!! There has been a problem with your fetch operation:', error);
     }
 }
-
-//* Start Parsing Process
-(async () => {
-    oGym['raw'] = await fetchData(filepath);
-    oGym['loaded'] = true;
-    getStarted(oGym);
-    console.dir(oGym);
-    webUi(oGym);
-    logStats(oGym);
-})();  
 
 function getStarted(oGym) {
     console.groupCollapsed('Records Parsing');
@@ -81,6 +82,11 @@ function doChart(label) {
         'width': 800,
         'height': 600
     };
+
+    if (screen.width > 1200) {
+        options['width'] = 1000;
+        options['height'] = 800;
+    }
 
     // ! sample
     // Create the data table.
@@ -406,5 +412,14 @@ function createListDiv(exercises, catagories) {
 
 }
 
+function bigScreen() {
 
-
+    if (screen.width > 1200) {
+        console.log('big screen');
+        document.body.style.flexDirection = 'row';
+        document.getElementById('exercises').style.width = '600px';
+        Array.from(document.getElementsByTagName('exe-cat')).forEach(div => {
+            div.style.width = "250px";
+        })
+    } 
+}
