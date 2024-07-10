@@ -1,3 +1,8 @@
+// TODO
+// * add reset button
+// * multiple layers
+// * group layer
+
 const filepath = './gymRecords.txt';
 
 var oGym = {
@@ -16,16 +21,27 @@ window.onload = function() {
 
     console.log('######### window is loaded');
 
-    if (oGym['loaded'] === true) {
-        console.log('######### gym data is loaded, begin plotting');
-
-        // google chart
-        // doChart(oGym);
-
-    } else {
-        console.error('######### gym data not loaded');       
-    }     
-
+    //* Start Parsing Process
+    (async () => {
+        oGym['raw'] = await fetchData(filepath);
+        oGym['loaded'] = true;
+        getStarted(oGym);
+        console.dir(oGym);
+        
+        if (oGym['loaded'] === true) {
+            console.log('######### gym data is loaded, begin plotting');
+            
+            // google chart
+            // doChart(oGym);
+            webUi(oGym);
+            
+        } else {
+            console.error('######### gym data not loaded');
+        }     
+        bigScreen();
+        logStats(oGym);
+    })()  ;
+        
 };
 
 async function fetchData(filePath) {
@@ -47,16 +63,6 @@ async function fetchData(filePath) {
     }
 }
 
-//* Start Parsing Process
-(async () => {
-    oGym['raw'] = await fetchData(filepath);
-    oGym['loaded'] = true;
-    getStarted(oGym);
-    console.dir(oGym);
-    webUi(oGym);
-    logStats(oGym);
-})();  
-
 function getStarted(oGym) {
     console.groupCollapsed('Records Parsing');
     var sub = 'getStarted()';
@@ -71,23 +77,36 @@ function getStarted(oGym) {
 
 function doChart(label) {
 
-    var exercise = label;
-    
+    var exercises = Array.from(document.getElementsByTagName('exe')).filter(exe => exe.classList.contains('active'));
+    console.log(exercises);
+
     console.group('Chart Plotting');
 
     // Set chart options
     var options = {
-        'title': 'Reps x Weight Over Time',
+        'title': 'Weight Increase Over Time',
+        'vAxis': {title: 'Weight x Reps'},
         'width': 800,
-        'height': 600
+        'height': 600,
+        'interpolateNulls': true
     };
 
-    // ! sample
+    if (screen.width > 1200) {
+        options['width'] = 1000;
+        options['height'] = 800;
+    }
+
     // Create the data table.
     var data = new google.visualization.DataTable();
     // X-Axis (time)
     data.addColumn('string', 'Date');
-    data.addColumn('number', exercise);
+
+    exercises.forEach(button => {
+        var exercise = button.innerText;
+        data.addColumn('number', exercise);
+    })
+
+    // * sample
     // data.addRows([
     //     ['Mushrooms', 3],
     //     ['Onions', 1],
@@ -96,9 +115,25 @@ function doChart(label) {
     //     ['Pepperoni', 2]
     // ]);
 
-    var dataSet = getDataFromExercise(exercise);
+    var dataSet = getDataFromExercises(exercises);
     data.addRows(dataSet);
-    
+
+    // data.addRows([
+    //     ['Row 1', 1, 2],
+    //     ['Row 2', 3, 4],
+    //     ['Row 3', 5, 6]
+    //   ]);
+
+    //* sample multicolumn
+    // data.addRows([   
+    //     ["Feb-06 '24", 5400, undefined],
+    //     ["Feb-07 '24", undefined, 1000],
+    //     ["Feb-12 '24", 4050, undefined],
+    //     ["Feb-13 '24", undefined, 2050],
+    //     ["Feb-20 '24", 4050, undefined],
+    // ]);
+
+  
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 
@@ -121,14 +156,28 @@ function format(string) {
 
 }
 
-function getDataFromExercise(exercise) {
+function getDataFromExercises(exercises) {
+    console.log(exercises);
     var data = [];
     Object.keys(oGym.dates).forEach(date => {
-        if (Object.keys(oGym['dates'][date]['exercises']).includes(exercise)) {
+        var dataPoints = [];
+        exercises.forEach((exe, i, a) => {
+            var exercise = exe.innerText;
+            console.log(exercise);
+            if (Object.keys(oGym['dates'][date]['exercises']).includes(exercise)) {
             var readableDate = oGym['dates'][date]['readable'];
+            if (dataPoints.length < 1) {
+                dataPoints.push(readableDate);
+                for (let j = 0; j < a.length; j++) {
+                    dataPoints.push(null);
+                }   
+                console.log(dataPoints);
+            }
             var totalWeightReps = oGym['dates'][date]['exercises'][exercise]['totalWeightReps'];
-            data.push([readableDate, totalWeightReps]);
-        }
+            dataPoints.splice(i+1, 1, totalWeightReps);
+            data.push(dataPoints);
+            }
+        })
     })
     console.log(data);
     return data;
@@ -287,6 +336,7 @@ function logStats(oGym) {
     console.groupEnd();
 }
 
+
 //* DOM MANIPULATION
 class exeButton {
     constructor(label, category) {
@@ -296,8 +346,9 @@ class exeButton {
         this.button.classList.add(category);
         var button = this.button;
         this.button.addEventListener('click', function() {
-            doChart(label);
             checkRadio(button);
+            doChart(label);
+            highestWeight(label);
         })
     }
 
@@ -318,16 +369,19 @@ class exeButton {
     }
 }
 
+function highestWeight(exercise) {
+    // check if already displayed
+    // if so, remove display
+    // if not, find data, then display
+}
+
 function checkRadio(button) {
     console.log(button);
-    var buttons = Array.from(document.getElementsByTagName('exe'));
-    buttons.forEach(button => {
-        if (button.classList.contains('active')) {
-            button.classList.remove('active');
-        }
-    })
-
-    button.classList.add('active');
+    if (!button.classList.contains('active')) {
+        button.classList.add('active');
+    } else if (button.classList.contains('active')) {
+        button.classList.remove('active');
+    }
 
 }
 
@@ -406,5 +460,14 @@ function createListDiv(exercises, catagories) {
 
 }
 
+function bigScreen() {
 
-
+    if (screen.width > 1200) {
+        console.log('big screen');
+        document.body.style.flexDirection = 'row';
+        document.getElementById('exercises').style.width = '600px';
+        Array.from(document.getElementsByTagName('exe-cat')).forEach(div => {
+            div.style.width = "250px";
+        })
+    } 
+}

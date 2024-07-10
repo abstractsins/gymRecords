@@ -4,114 +4,118 @@
     box-sizing: border-box;
 }
 
-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.main-div {
-    display: flex;
-    padding: 15px;
-    border-radius: 15px;
-    margin: 15px;
-    /* max-width: 1000px; */
-}
-
-#chart_div_div {
-    flex-direction: column;
-    border: 3px solid black;
-    /* background-color: rgb(221, 255, 244); */
-}
-
-#chart_div_div h1 {
-    font-family: 'Courier New', Courier, monospace;
-}
-
-#exercises {
-    /* background-color: rgb(186, 229, 255); */
-    display: flex;
-    justify-content: space-evenly;
-    /* flex-wrap: wrap; */
-    width: 1000px;
-    /* border: 3px solid black; */
-    border-radius: 15px;
-
-}
-
-exe-cat {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    padding: 20px 10px;
-    border-radius: 15px;
-    height: fit-content;
-    border: 5px solid black;
-}
-
-exe-cat#upper-body {
-    width: 500px;
-    /* background-color: rgb(236, 226, 226); */
-}
-
-exe-cat#lower-body {
-    width: 300px;
-    /* background-color: rgb(228, 226, 236); */
-}
-
-exe {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border: 2px solid black;
-    border-radius: 10px;
-    font-size: 1.25em;
-    font-family: sans-serif;
-    padding: 0.5em;
-    margin: 5px;
-    width: 180px;
-    height: 90px;
-    text-align: center;
-}
-
-exe.active {
-    background-color: rgb(76, 76, 76) !important;
-    color: white;
-}
-
-exe:hover {
-    background-color: lightblue;
-    cursor: pointer;
-    filter: drop-shadow(2px 2px 2px black);
-    transform: translate(-2px, -2px);
-}
-
-exe.undefined {
-    background-color: white;
-}
-
-exe.undefined:active {
-    background-color: rgb(123, 216, 230);
-}
-
-exe:active {
-    transform: translate(2px, 2px);
-    filter: drop-shadow(0 0 0 black);
-}
-
-exe.upper-body {
-    background-color: lightcoral;
-}
-
-exe.upper-body:active {
-    background-color: rgb(200, 128, 128);
-}
-
-exe.lower-body {
-    background-color: lightgreen;
-}
+/* @media only screen and (max-width: 1200px) { */
     
-exe.lower-body:active {
-    background-color: rgb(100, 238, 144);
-}
+    
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .main-div {
+        display: flex;
+        padding: 15px;
+        border-radius: 15px;
+        margin: 15px;
+        /* max-width: 1000px; */
+    }
+    
+    #chart_div_div {
+        flex-direction: column;
+        border: 3px solid black;
+        /* background-color: rgb(221, 255, 244); */
+    }
+    
+    #chart_div_div h1 {
+        font-family: 'Courier New', Courier, monospace;
+    }
+    
+    #exercises {
+        /* background-color: rgb(186, 229, 255); */
+        display: flex;
+        justify-content: space-evenly;
+        /* flex-wrap: wrap; */
+        width: 1000px;
+        /* border: 3px solid black; */
+        border-radius: 15px;
+        
+    }
+    
+    exe-cat {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding: 20px 10px;
+        border-radius: 15px;
+        height: fit-content;
+        border: 5px solid black;
+    }
+    
+    exe-cat#upper-body {
+        width: 500px;
+        /* background-color: rgb(236, 226, 226); */
+    }
+    
+    exe-cat#lower-body {
+        width: 300px;
+        /* background-color: rgb(228, 226, 236); */
+    }
+    
+    exe {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid black;
+        border-radius: 10px;
+        font-size: 1.25em;
+        font-family: sans-serif;
+        padding: 0.5em;
+        margin: 5px;
+        width: 180px;
+        height: 90px;
+        text-align: center;
+    }
+    
+    exe.active {
+        background-color: rgb(76, 76, 76) !important;
+        color: white;
+    }
+    
+    exe:hover {
+        background-color: lightblue;
+        cursor: pointer;
+        filter: drop-shadow(2px 2px 2px black);
+        transform: translate(-2px, -2px);
+    }
+    
+    exe.undefined {
+        background-color: white;
+    }
+
+    exe.undefined:active {
+        background-color: rgb(123, 216, 230);
+    }
+
+    exe:active {
+        transform: translate(2px, 2px);
+        filter: drop-shadow(0 0 0 black);
+    }
+
+    exe.upper-body {
+        background-color: lightcoral;
+    }
+
+    exe.upper-body:active {
+        background-color: rgb(200, 128, 128);
+    }
+
+    exe.lower-body {
+        background-color: lightgreen;
+    }
+
+    exe.lower-body:active {
+        background-color: rgb(100, 238, 144);
+    }
+/* } */
